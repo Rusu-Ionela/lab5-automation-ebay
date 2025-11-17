@@ -9,16 +9,19 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.Handler;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EbaySearchHeaderTest {
 
+    private WebDriver driver;
+    private WebDriverWait wait;
+
+    // Oprește logurile inutile din consolă
     private static void silenceLogs() {
-        // 1) Taie JUL (java.util.logging) – sursa mesajelor "WARNING:"
         Logger root = Logger.getLogger("");
         root.setLevel(Level.OFF);
         for (Handler h : root.getHandlers()) {
@@ -26,43 +29,39 @@ public class EbaySearchHeaderTest {
         }
         Logger.getLogger("org.openqa").setLevel(Level.OFF);
         Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
-
-        // 2) Reduc SLF4J-simple la "error" (dacă apare ceva transitive)
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "error");
-
-        // 3) Oprește logurile ChromeDriver
         System.setProperty("webdriver.chrome.silentOutput", "true");
     }
 
-    private WebDriver driver;
-    private WebDriverWait wait;
-
     @BeforeAll
     static void setupClass() {
-        silenceLogs();                             // 🔇 înainte de orice inițializare Selenium
-        WebDriverManager.chromedriver().setup();   // manager pentru driver
+        silenceLogs();
+        WebDriverManager.chromedriver().setup();
     }
 
     @BeforeEach
     void setup() {
         ChromeOptions options = new ChromeOptions();
-        // opțional: rulează mai "curat" și stabil
         options.addArguments("--disable-infobars");
         options.addArguments("--disable-gpu");
         options.addArguments("--remote-allow-origins=*");
 
         driver = new ChromeDriver(options);
         driver.manage().window().maximize();
-
         wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
-        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
-        driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(30));
     }
 
     @AfterEach
     void teardown() {
-        if (driver != null) driver.quit();
+        if (driver != null) {
+            // Pauză de 10 secunde ca să vezi rezultatul în browser
+            try {
+                Thread.sleep(10000); // 10 secunde
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            driver.quit(); // Închide browser-ul după pauză
+        }
     }
 
     @Test
@@ -71,21 +70,29 @@ public class EbaySearchHeaderTest {
         driver.get("https://www.ebay.com/");
         handleOptionalCookieBanner();
 
-        // Folosim ENTER în căsuța de căutare (mai robust decât click pe buton)
-        By searchBox = By.id("gh-ac");
-        WebElement box = wait.until(ExpectedConditions.elementToBeClickable(searchBox));
-        box.clear();
-        box.sendKeys("computer");
-        box.sendKeys(Keys.ENTER);
+        WebElement searchBox;
+        try {
+            searchBox = wait.until(ExpectedConditions.elementToBeClickable(By.id("gh-ac")));
+        } catch (TimeoutException e) {
+            searchBox = wait.until(ExpectedConditions.elementToBeClickable(By.name("_nkw")));
+        }
 
-        // Header-ul eBay (id="gh") trebuie să fie vizibil după căutare
+        searchBox.click();
+        searchBox.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+        searchBox.sendKeys(Keys.DELETE);
+        searchBox.sendKeys("computer");
+
+        wait.until(ExpectedConditions.attributeContains(searchBox, "value", "computer"));
+
+        searchBox.sendKeys(Keys.ENTER);
+
         By header = By.id("gh");
         wait.until(ExpectedConditions.visibilityOfElementLocated(header));
-        assertTrue(driver.findElement(header).isDisplayed(), "eBay header should be visible after search");
+        assertTrue(driver.findElement(header).isDisplayed(),
+                "eBay header should be visible after search");
     }
 
     private void handleOptionalCookieBanner() {
-        // Închidem bannerele dacă apar; încercăm câteva selecții comune
         clickIfPresent(By.cssSelector("button[aria-label='Accept all']"));
         clickIfPresent(By.id("gdpr-banner-accept"));
         clickIfPresent(By.xpath("//button[contains(.,'Accept') or contains(.,'Accept All')]"));
@@ -96,7 +103,6 @@ public class EbaySearchHeaderTest {
             WebElement el = new WebDriverWait(driver, Duration.ofSeconds(3))
                     .until(ExpectedConditions.elementToBeClickable(locator));
             el.click();
-        } catch (TimeoutException ignored) {
-        }
+        } catch (TimeoutException ignored) { }
     }
 }
