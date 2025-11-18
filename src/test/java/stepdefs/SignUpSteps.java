@@ -13,7 +13,7 @@ public class SignUpSteps {
     private final SignUpPage signUpPage;
 
     public SignUpSteps() {
-        this.signUpPage = new SignUpPage(stepdefs.Hooks.driver);
+        this.signUpPage = new SignUpPage(Hooks1.driver);
     }
 
     @When("I submit the sign up form with empty fields")

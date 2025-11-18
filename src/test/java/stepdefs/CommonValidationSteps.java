@@ -9,7 +9,7 @@ public class CommonValidationSteps {
     private final WebDriver driver;
 
     public CommonValidationSteps() {
-        this.driver = stepdefs.Hooks.driver;
+        this.driver = Hooks1.driver;
     }
 
     @Then("I should see error page {string}")

@@ -13,7 +13,7 @@ public class NavigationSteps {
     private final SignUpPage signUpPage;
 
     public NavigationSteps() {
-        WebDriver driver = Hooks.driver;
+        WebDriver driver = Hooks1.driver;
         this.mensWearPage = new MensWearPage(driver);
         this.signInPage   = new SignInPage(driver);
         this.signUpPage   = new SignUpPage(driver);

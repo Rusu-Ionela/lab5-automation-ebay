@@ -14,7 +14,7 @@ public class MensWearSteps {
     private final ProductPage productPage;
 
     public MensWearSteps() {
-        WebDriver driver = stepdefs.Hooks.driver;
+        WebDriver driver = Hooks1.driver;
         this.mensWearPage = new MensWearPage(driver);
         this.productPage = new ProductPage(driver);
     }

@@ -15,7 +15,7 @@ public class AuthSteps {
     private final SignUpPage signUpPage;
 
     public AuthSteps() {
-        WebDriver driver = Hooks.driver;
+        WebDriver driver = Hooks1.driver;
         this.signInPage = new SignInPage(driver);
         this.signUpPage = new SignUpPage(driver);
     }

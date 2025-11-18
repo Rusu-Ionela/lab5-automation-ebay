@@ -11,7 +11,7 @@ public class ContactSteps {
     private final MensWearPage mensWearPage;
 
     public ContactSteps() {
-        WebDriver driver = Hooks.driver;
+        WebDriver driver = Hooks1.driver;
         this.mensWearPage = new MensWearPage(driver);
     }
 
@@ -27,7 +27,7 @@ public class ContactSteps {
 
     @Then("the URL should contain {string}")
     public void the_url_should_contain(String fragment) {
-        String url = Hooks.driver.getCurrentUrl();
+        String url = Hooks1.driver.getCurrentUrl();
         Assert.assertTrue("URL does not contain expected fragment: " + fragment,
                 url.contains(fragment));
     }
